@@ -255,10 +255,13 @@ void drawFlowerBox(float x1, float y1, float x2, float y2, float height) {
     }
 }
 
+// Forward declaration for the OPEN sign's text rendering helper
+void drawOpenText(float cx, float cy, float letterWidth, float letterHeight, float spacing);
+
 // Utility to draw text-like rectangles for OPEN sign
 void drawOpenSign(float cx, float cy, float width, float height) {
-    // Sign background (fluorescent effect)
-    glColor4f(0.0f, 1.0f, 0.2f, 0.8f); // bright green with transparency
+    // Sign background (brighter fluorescent effect)
+    glColor4f(0.1f, 1.0f, 0.3f, 0.85f); // Brighter green
     glBegin(GL_QUADS);
     glVertex2f(cx - width*0.5f, cy - height*0.5f);
     glVertex2f(cx + width*0.5f, cy - height*0.5f);
@@ -267,7 +270,8 @@ void drawOpenSign(float cx, float cy, float width, float height) {
     glEnd();
     
     // Sign border
-    glColor3f(0.0f, 0.6f, 0.0f);
+    glColor3f(0.0f, 0.5f, 0.1f); // Darker green
+    glLineWidth(1.5f);
     glBegin(GL_LINE_LOOP);
     glVertex2f(cx - width*0.5f, cy - height*0.5f);
     glVertex2f(cx + width*0.5f, cy - height*0.5f);
@@ -275,53 +279,99 @@ void drawOpenSign(float cx, float cy, float width, float height) {
     glVertex2f(cx - width*0.5f, cy + height*0.5f);
     glEnd();
     
-    // Simple "OPEN" text representation with rectangles
-    glColor3f(1.0f, 1.0f, 1.0f); // white text
+    // "OPEN" text with neon glow effect
     float letterWidth = width * 0.12f;
     float letterHeight = height * 0.6f;
     float spacing = width * 0.18f;
-    
+
+    // Draw glow first (thicker, semi-transparent)
+    glColor4f(0.6f, 1.0f, 0.7f, 0.6f); // Light green glow
+    glLineWidth(5.0f);
+    drawOpenText(cx, cy, letterWidth, letterHeight, spacing);
+
+    // Draw main text (thinner, solid color)
+    glColor3f(1.0f, 1.0f, 1.0f); // Bright white text
+    glLineWidth(2.0f);
+    drawOpenText(cx, cy, letterWidth, letterHeight, spacing);
+
+    glLineWidth(1.0f); // Reset line width
+}
+
+// Helper function to draw the OPEN letters
+void drawOpenText(float cx, float cy, float letterWidth, float letterHeight, float spacing) {
     // O
     glBegin(GL_LINE_LOOP);
-    glVertex2f(cx - spacing*2 - letterWidth*0.5f, cy - letterHeight*0.5f);
-    glVertex2f(cx - spacing*2 + letterWidth*0.5f, cy - letterHeight*0.5f);
-    glVertex2f(cx - spacing*2 + letterWidth*0.5f, cy + letterHeight*0.5f);
-    glVertex2f(cx - spacing*2 - letterWidth*0.5f, cy + letterHeight*0.5f);
+    glVertex2f(cx - spacing*1.5f - letterWidth*0.5f, cy - letterHeight*0.5f);
+    glVertex2f(cx - spacing*1.5f + letterWidth*0.5f, cy - letterHeight*0.5f);
+    glVertex2f(cx - spacing*1.5f + letterWidth*0.5f, cy + letterHeight*0.5f);
+    glVertex2f(cx - spacing*1.5f - letterWidth*0.5f, cy + letterHeight*0.5f);
     glEnd();
     
     // P
     glBegin(GL_LINES);
-    glVertex2f(cx - spacing - letterWidth*0.5f, cy - letterHeight*0.5f);
-    glVertex2f(cx - spacing - letterWidth*0.5f, cy + letterHeight*0.5f);
-    glVertex2f(cx - spacing - letterWidth*0.5f, cy + letterHeight*0.5f);
-    glVertex2f(cx - spacing + letterWidth*0.5f, cy + letterHeight*0.5f);
-    glVertex2f(cx - spacing + letterWidth*0.5f, cy + letterHeight*0.5f);
-    glVertex2f(cx - spacing + letterWidth*0.5f, cy);
-    glVertex2f(cx - spacing + letterWidth*0.5f, cy);
-    glVertex2f(cx - spacing - letterWidth*0.5f, cy);
+    glVertex2f(cx - spacing*0.5f - letterWidth*0.5f, cy - letterHeight*0.5f);
+    glVertex2f(cx - spacing*0.5f - letterWidth*0.5f, cy + letterHeight*0.5f);
+    glEnd();
+    glBegin(GL_LINE_LOOP);
+    glVertex2f(cx - spacing*0.5f - letterWidth*0.5f, cy);
+    glVertex2f(cx - spacing*0.5f + letterWidth*0.5f, cy);
+    glVertex2f(cx - spacing*0.5f + letterWidth*0.5f, cy + letterHeight*0.5f);
+    glVertex2f(cx - spacing*0.5f - letterWidth*0.5f, cy + letterHeight*0.5f);
     glEnd();
     
     // E
     glBegin(GL_LINES);
-    glVertex2f(cx - letterWidth*0.5f, cy - letterHeight*0.5f);
-    glVertex2f(cx - letterWidth*0.5f, cy + letterHeight*0.5f);
-    glVertex2f(cx - letterWidth*0.5f, cy + letterHeight*0.5f);
-    glVertex2f(cx + letterWidth*0.5f, cy + letterHeight*0.5f);
-    glVertex2f(cx - letterWidth*0.5f, cy);
-    glVertex2f(cx + letterWidth*0.3f, cy);
-    glVertex2f(cx - letterWidth*0.5f, cy - letterHeight*0.5f);
-    glVertex2f(cx + letterWidth*0.5f, cy - letterHeight*0.5f);
+    glVertex2f(cx + spacing*0.5f - letterWidth*0.5f, cy - letterHeight*0.5f);
+    glVertex2f(cx + spacing*0.5f - letterWidth*0.5f, cy + letterHeight*0.5f);
+    glVertex2f(cx + spacing*0.5f - letterWidth*0.5f, cy + letterHeight*0.5f);
+    glVertex2f(cx + spacing*0.5f + letterWidth*0.5f, cy + letterHeight*0.5f);
+    glVertex2f(cx + spacing*0.5f - letterWidth*0.5f, cy);
+    glVertex2f(cx + spacing*0.5f + letterWidth*0.3f, cy);
+    glVertex2f(cx + spacing*0.5f - letterWidth*0.5f, cy - letterHeight*0.5f);
+    glVertex2f(cx + spacing*0.5f + letterWidth*0.5f, cy - letterHeight*0.5f);
     glEnd();
     
     // N
     glBegin(GL_LINES);
-    glVertex2f(cx + spacing - letterWidth*0.5f, cy - letterHeight*0.5f);
-    glVertex2f(cx + spacing - letterWidth*0.5f, cy + letterHeight*0.5f);
-    glVertex2f(cx + spacing - letterWidth*0.5f, cy + letterHeight*0.5f);
-    glVertex2f(cx + spacing + letterWidth*0.5f, cy - letterHeight*0.5f);
-    glVertex2f(cx + spacing + letterWidth*0.5f, cy - letterHeight*0.5f);
-    glVertex2f(cx + spacing + letterWidth*0.5f, cy + letterHeight*0.5f);
+    glVertex2f(cx + spacing*1.5f - letterWidth*0.5f, cy - letterHeight*0.5f);
+    glVertex2f(cx + spacing*1.5f - letterWidth*0.5f, cy + letterHeight*0.5f);
+    glVertex2f(cx + spacing*1.5f - letterWidth*0.5f, cy + letterHeight*0.5f);
+    glVertex2f(cx + spacing*1.5f + letterWidth*0.5f, cy - letterHeight*0.5f);
+    glVertex2f(cx + spacing*1.5f + letterWidth*0.5f, cy - letterHeight*0.5f);
+    glVertex2f(cx + spacing*1.5f + letterWidth*0.5f, cy + letterHeight*0.5f);
     glEnd();
+}
+
+// Utility to draw a chimney-like extractor on the roof
+void drawExtractor(float cx, float cy, float width, float height, float slope) {
+    // Calculate the y-offsets for the angled base
+    float y_offset_left = -width / 2 * slope;
+    float y_offset_right = width / 2 * slope;
+
+    // Flashing at the base for integration (angled with the roof)
+    float flashingWidth = width * 0.7f;
+    float flashingHeight = 0.02f;
+    glColor3f(0.35f, 0.12f, 0.12f); // Roof eave/shadow color for better blending
+    glBegin(GL_QUADS);
+    glVertex2f(cx - flashingWidth, cy - flashingWidth * slope);
+    glVertex2f(cx + flashingWidth, cy + flashingWidth * slope);
+    glVertex2f(cx + flashingWidth, cy + flashingWidth * slope - flashingHeight);
+    glVertex2f(cx - flashingWidth, cy - flashingWidth * slope - flashingHeight);
+    glEnd();
+
+    // Main body with metallic gradient and angled base
+    glBegin(GL_QUADS);
+    glColor3f(0.65f, 0.65f, 0.7f); // Lighter top
+    glVertex2f(cx - width / 2, cy + y_offset_left + height);
+    glVertex2f(cx + width / 2, cy + y_offset_right + height);
+    glColor3f(0.45f, 0.45f, 0.5f); // Darker bottom
+    glVertex2f(cx + width / 2, cy + y_offset_right);
+    glVertex2f(cx - width / 2, cy + y_offset_left);
+    glEnd();
+
+    // Cap on top (adjusted to be horizontal)
+    float cap_y = cy + height + (y_offset_left + y_offset_right) / 2.0f;
+    drawRectangle(cx - width * 0.6f, cap_y, cx + width * 0.6f, cap_y + 0.02f, 0.3f, 0.3f, 0.3f);
 }
 
 // ------------------ Camera Controls ------------------
@@ -595,6 +645,13 @@ public:
         glVertex2f( 0.06f, 0.96f);
         glEnd();
         glLineWidth(1.0f);
+
+        // ---- Extractor on the roof ----
+        // Position it on the right slope of the roof, closer to the top
+        float extractorX = 0.4f;
+        float roofSlope = (1.0f - 0.3f) / (0.0f - 1.3f);
+        float extractorY = roofSlope * (extractorX - 1.3f) + 0.3f;
+        drawExtractor(extractorX, extractorY, 0.08f, 0.12f, roofSlope);
         
         glPopMatrix();
     }
