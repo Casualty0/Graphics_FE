@@ -11,6 +11,64 @@
 // ------------------ Utility Functions for Restaurant Front View ------------------
 
 // Utility to draw a filled rectangle with outline
+void drawBrownWindow(float x_left, float y_bottom, float x_right, float y_top) {
+    float window_width = x_right - x_left;
+    float window_height = y_top - y_bottom;
+
+    // --- 1. Draw the Dark Interior/Glass Area ---
+    // The image's interior is a uniform gray, so we change the color here.
+    //drawRectangle(x_left, y_bottom, x_right, y_top, 0.70f, 0.70f, 0.70f); // Gray background /*DONT NEED THIS*/
+
+    // --- 2. Draw the Brown Grid/Shutter Lines ---
+
+    // Set the brown/orange color for the lines in the frame
+    float line_r = 0.94f;
+    float line_g = 0.49f;
+    float line_b = 0.17f; // A bright orange/brown frame
+    glColor3f(line_r, line_g, line_b);
+    glLineWidth(3.1f); // Increase line thickness to better represent the image's structure 
+
+    glBegin(GL_LINES);
+
+    // A. Draw the Horizontal Slats 
+    // The frame has about 20 horizontal divisions for the slats.
+    int horizontal_slats = 20;
+
+    // We only need to draw 'horizontal_slats - 1' lines
+    for (int i = 1; i < horizontal_slats; ++i) {
+        float y = y_bottom + (window_height / horizontal_slats) * i;
+        glVertex2f(x_left, y);
+        glVertex2f(x_right, y);
+    }
+
+    // B. Draw the Diagonal Cross-Bracing Lines (the 'X')
+
+    // 1. Bottom-left to top-right
+    glVertex2f(x_left, y_bottom);
+    glVertex2f(x_right, y_top);
+
+    // 2. Top-left to bottom-right
+    glVertex2f(x_left, y_top);
+    glVertex2f(x_right, y_bottom);
+
+    // C. Draw a simple frame for the window edge (Optional, but helps define the border)
+    // Left border
+    glVertex2f(x_left, y_bottom);
+    glVertex2f(x_left, y_top);
+    // Right border
+    glVertex2f(x_right, y_bottom);
+    glVertex2f(x_right, y_top);
+    // Bottom border
+    glVertex2f(x_left, y_bottom);
+    glVertex2f(x_right, y_bottom);
+    // Top border
+    glVertex2f(x_left, y_top);
+    glVertex2f(x_right, y_top);
+
+    glEnd();
+    glLineWidth(1.0f); // Reset line thickness
+}
+
 void drawRectangle(float x1, float y1, float x2, float y2, float r, float g, float b) {
     glColor3f(r, g, b);
     glBegin(GL_POLYGON);
@@ -380,24 +438,582 @@ float scrollY = 0.0f;
 float zoomLevel = 50.0f; // Initial zoom
 
 // ------------------ CLASSES ------------------
+
+class Toilet {
+public:
+    void Draw(float x, float y, float orientation = 0.0f) {
+        // orientation: 0 = tank on right, 1 = tank on left, 2 = tank on top, 3 = tank on bottom
+
+        glBegin(GL_LINES);
+        glColor3f(1.0f, 1.0f, 1.0f); // White
+
+        float bowlRadius = 0.2f;
+        float innerRadius = 0.12f;
+        float tankSize = 0.15f; // Square tank
+
+        if (orientation == 0) { // Tank on right (default)
+            // Outer circle (bowl)
+            DrawCircle(x, y, bowlRadius, 16);
+
+            // Inner circle
+            DrawCircle(x, y, innerRadius, 12);
+
+            // Tank (square on right)
+            float tankX = x + bowlRadius + tankSize / 2;
+            glVertex2f(tankX - tankSize / 2, y - tankSize / 2); glVertex2f(tankX + tankSize / 2, y - tankSize / 2);
+            glVertex2f(tankX + tankSize / 2, y - tankSize / 2); glVertex2f(tankX + tankSize / 2, y + tankSize / 2);
+            glVertex2f(tankX + tankSize / 2, y + tankSize / 2); glVertex2f(tankX - tankSize / 2, y + tankSize / 2);
+            glVertex2f(tankX - tankSize / 2, y + tankSize / 2); glVertex2f(tankX - tankSize / 2, y - tankSize / 2);
+
+        }
+        else if (orientation == 1) { // Tank on left
+            // Outer circle (bowl)
+            DrawCircle(x, y, bowlRadius, 16);
+
+            // Inner circle
+            DrawCircle(x, y, innerRadius, 12);
+
+            // Tank (square on left)
+            float tankX = x - bowlRadius - tankSize / 2;
+            glVertex2f(tankX - tankSize / 2, y - tankSize / 2); glVertex2f(tankX + tankSize / 2, y - tankSize / 2);
+            glVertex2f(tankX + tankSize / 2, y - tankSize / 2); glVertex2f(tankX + tankSize / 2, y + tankSize / 2);
+            glVertex2f(tankX + tankSize / 2, y + tankSize / 2); glVertex2f(tankX - tankSize / 2, y + tankSize / 2);
+            glVertex2f(tankX - tankSize / 2, y + tankSize / 2); glVertex2f(tankX - tankSize / 2, y - tankSize / 2);
+
+        }
+        else if (orientation == 2) { // Tank on top
+            // Outer circle (bowl)
+            DrawCircle(x, y, bowlRadius, 16);
+
+            // Inner circle
+            DrawCircle(x, y, innerRadius, 12);
+
+            // Tank (square on top)
+            float tankY = y + bowlRadius + tankSize / 2;
+            glVertex2f(x - tankSize / 2, tankY - tankSize / 2); glVertex2f(x + tankSize / 2, tankY - tankSize / 2);
+            glVertex2f(x + tankSize / 2, tankY - tankSize / 2); glVertex2f(x + tankSize / 2, tankY + tankSize / 2);
+            glVertex2f(x + tankSize / 2, tankY + tankSize / 2); glVertex2f(x - tankSize / 2, tankY + tankSize / 2);
+            glVertex2f(x - tankSize / 2, tankY + tankSize / 2); glVertex2f(x - tankSize / 2, tankY - tankSize / 2);
+
+        }
+        else if (orientation == 3) { // Tank on bottom
+            // Outer circle (bowl)
+            DrawCircle(x, y, bowlRadius, 16);
+
+            // Inner circle
+            DrawCircle(x, y, innerRadius, 12);
+
+            // Tank (square on bottom)
+            float tankY = y - bowlRadius - tankSize / 2;
+            glVertex2f(x - tankSize / 2, tankY - tankSize / 2); glVertex2f(x + tankSize / 2, tankY - tankSize / 2);
+            glVertex2f(x + tankSize / 2, tankY - tankSize / 2); glVertex2f(x + tankSize / 2, tankY + tankSize / 2);
+            glVertex2f(x + tankSize / 2, tankY + tankSize / 2); glVertex2f(x - tankSize / 2, tankY + tankSize / 2);
+            glVertex2f(x - tankSize / 2, tankY + tankSize / 2); glVertex2f(x - tankSize / 2, tankY - tankSize / 2);
+        }
+
+        glEnd();
+    }
+
+private:
+    void DrawCircle(float cx, float cy, float radius, int segments) {
+        for (int i = 0; i < segments; i++) {
+            float theta1 = 2.0f * M_PI * i / segments;
+            float theta2 = 2.0f * M_PI * (i + 1) / segments;
+            glVertex2f(cx + radius * cos(theta1), cy + radius * sin(theta1));
+            glVertex2f(cx + radius * cos(theta2), cy + radius * sin(theta2));
+        }
+    }
+};
+
+class FireExtinguisher {
+public:
+    void Draw(float x, float y) {
+        glBegin(GL_LINES);
+        glColor3f(1.0f, 0.0f, 0.0f); // Red color for fire safety
+
+        // Main body (circle from top-down view)
+        float radius = 0.15f;
+        int segments = 12;
+
+        // Draw circle for extinguisher body
+        for (int i = 0; i < segments; i++) {
+            float theta1 = 2.0f * M_PI * i / segments;
+            float theta2 = 2.0f * M_PI * (i + 1) / segments;
+            glVertex2f(x + radius * cos(theta1), y + radius * sin(theta1));
+            glVertex2f(x + radius * cos(theta2), y + radius * sin(theta2));
+        }
+
+        // Add "FE" text indicator (using lines)
+        // F shape
+        glVertex2f(x - radius * 0.3f, y + radius * 0.5f); glVertex2f(x - radius * 0.3f, y - radius * 0.5f);
+        glVertex2f(x - radius * 0.3f, y + radius * 0.5f); glVertex2f(x - radius * 0.1f, y + radius * 0.5f);
+        glVertex2f(x - radius * 0.3f, y); glVertex2f(x - radius * 0.1f, y);
+
+        // E shape  
+        glVertex2f(x + radius * 0.1f, y + radius * 0.5f); glVertex2f(x + radius * 0.1f, y - radius * 0.5f);
+        glVertex2f(x + radius * 0.1f, y + radius * 0.5f); glVertex2f(x + radius * 0.3f, y + radius * 0.5f);
+        glVertex2f(x + radius * 0.1f, y); glVertex2f(x + radius * 0.3f, y);
+        glVertex2f(x + radius * 0.1f, y - radius * 0.5f); glVertex2f(x + radius * 0.3f, y - radius * 0.5f);
+
+        glEnd();
+    }
+};
+
+void DrawDoorArc(float cx, float cy, float radius, float startAngle, float endAngle, int segments = 20) {
+    for (int i = 0; i < segments; i++) {
+        float theta1 = startAngle + (endAngle - startAngle) * (i / (float)segments);
+        float theta2 = startAngle + (endAngle - startAngle) * ((i + 1) / (float)segments);
+        glVertex2f(cx + radius * cos(theta1), cy + radius * sin(theta1));
+        glVertex2f(cx + radius * cos(theta2), cy + radius * sin(theta2));
+    }
+}
+
+class Bin {
+public:
+    void Draw(float x, float y, float size = 0.25f) {
+        glBegin(GL_LINES);
+        glColor3f(0.6f, 0.6f, 0.6f); // Gray color for bins
+
+        float outerSize = size;
+        float innerSize = size * 0.6f; // Smaller inner square
+
+        // Outer square
+        glVertex2f(x - outerSize / 2, y - outerSize / 2); glVertex2f(x + outerSize / 2, y - outerSize / 2);
+        glVertex2f(x + outerSize / 2, y - outerSize / 2); glVertex2f(x + outerSize / 2, y + outerSize / 2);
+        glVertex2f(x + outerSize / 2, y + outerSize / 2); glVertex2f(x - outerSize / 2, y + outerSize / 2);
+        glVertex2f(x - outerSize / 2, y + outerSize / 2); glVertex2f(x - outerSize / 2, y - outerSize / 2);
+
+        // Inner square
+        glVertex2f(x - innerSize / 2, y - innerSize / 2); glVertex2f(x + innerSize / 2, y - innerSize / 2);
+        glVertex2f(x + innerSize / 2, y - innerSize / 2); glVertex2f(x + innerSize / 2, y + innerSize / 2);
+        glVertex2f(x + innerSize / 2, y + innerSize / 2); glVertex2f(x - innerSize / 2, y + innerSize / 2);
+        glVertex2f(x - innerSize / 2, y + innerSize / 2); glVertex2f(x - innerSize / 2, y - innerSize / 2);
+
+        glEnd();
+    }
+};
+
 class FloorPlan {
 public:
     void Draw() {
         glBegin(GL_LINES);
         glColor3f(1.0f, 1.0f, 1.0f); // White floor plan
 
-        float size = 20.0f; // floor plan box (square)
-
         // Outer square
-        glVertex2f(-size, -size); glVertex2f(size, -size);
-        glVertex2f(size, -size); glVertex2f(size, size);
-        glVertex2f(size, size); glVertex2f(-size, size);
-        glVertex2f(-size, size); glVertex2f(-size, -size);
+		glVertex2f(-6, -10); glVertex2f(6, -10);// bottom
+        glVertex2f(-6, -10); glVertex2f(-6, 10);//left
+        glVertex2f(-6, 10); glVertex2f(6, 10);//top
+        glVertex2f(6, -10); glVertex2f(6,10);//right     
 
-        // Reference cross
-        glColor3f(1.0f, 0.0f, 0.0f); // red cross
-        glVertex2f(-size, 0.0f); glVertex2f(size, 0.0f);
-        glVertex2f(0.0f, -size); glVertex2f(0.0f, size);
+        //Counter space Kitchen
+		glVertex2f(5.4f,9.4f); glVertex2f(1.5f, 9.4f);
+        glVertex2f(5.4f, 10.0f); glVertex2f(5.4f, 2.0f); 
+        glVertex2f(5.4f, 2.0f); glVertex2f(6.0f, 2.0f);
+        //sinks
+		glVertex2f(2.5f, 10.0f); glVertex2f(2.5f, 9.4f);
+        glVertex2f(1.5f, 9.8f); glVertex2f(2.0f, 9.8f);
+        glVertex2f(1.5f, 9.7f); glVertex2f(2.0f, 9.7f);
+        glVertex2f(1.5f, 9.6f); glVertex2f(2.0f, 9.6f);
+        glVertex2f(1.5f, 9.5f); glVertex2f(2.0f, 9.5f);
+
+        glVertex2f(3.5f, 10.0f); glVertex2f(3.5f, 9.4f);
+        glVertex2f(2.5f, 9.8f); glVertex2f(3.0f, 9.8f);
+        glVertex2f(2.5f, 9.7f); glVertex2f(3.0f, 9.7f);
+        glVertex2f(2.5f, 9.6f); glVertex2f(3.0f, 9.6f);
+        glVertex2f(2.5f, 9.5f); glVertex2f(3.0f, 9.5f);
+
+        glVertex2f(4.5f, 10.0f); glVertex2f(4.5f, 9.4f);
+        glVertex2f(3.5f, 9.8f); glVertex2f(4.0f, 9.8f);
+        glVertex2f(3.5f, 9.7f); glVertex2f(4.0f, 9.7f);
+        glVertex2f(3.5f, 9.6f); glVertex2f(4.0f, 9.6f);
+        glVertex2f(3.5f, 9.5f); glVertex2f(4.0f, 9.5f);
+
+        //stoves and grills
+        glVertex2f(5.5f, 2.1); glVertex2f(5.9f, 2.1f);
+        glVertex2f(5.5f, 2.8f); glVertex2f(5.5f, 2.1f);
+        glVertex2f(5.9f, 2.1f); glVertex2f(5.9f, 2.8f);
+        glVertex2f(5.9f, 2.8f); glVertex2f(5.5f, 2.8f);
+
+        glVertex2f(5.5f, 3.1); glVertex2f(5.9f, 3.1f);
+        glVertex2f(5.5f, 3.8f); glVertex2f(5.5f, 3.1f);
+        glVertex2f(5.9f, 3.1f); glVertex2f(5.9f, 3.8f);
+        glVertex2f(5.9f, 3.8f); glVertex2f(5.5f, 3.8f);
+
+        glVertex2f(5.5f, 4.1); glVertex2f(5.9f, 4.1f);
+        glVertex2f(5.5f, 4.8f); glVertex2f(5.5f, 4.1f);
+        glVertex2f(5.9f, 4.1f); glVertex2f(5.9f, 4.8f);
+        glVertex2f(5.9f, 4.8f); glVertex2f(5.5f, 4.8f);
+
+        glVertex2f(5.5f, 5.1); glVertex2f(5.7f, 5.1f);
+        glVertex2f(5.5f, 5.8f); glVertex2f(5.5f, 5.1f);
+        glVertex2f(5.7f, 5.1f); glVertex2f(5.7f, 5.8f);
+        glVertex2f(5.7f, 5.8f); glVertex2f(5.5f, 5.8f);
+
+        glVertex2f(5.5f, 6.1); glVertex2f(5.7f, 6.1f);
+        glVertex2f(5.5f, 6.8f); glVertex2f(5.5f, 6.1f);
+        glVertex2f(5.7f, 6.1f); glVertex2f(5.7f, 6.8f);
+        glVertex2f(5.7f, 6.8f); glVertex2f(5.5f, 6.8f);
+
+        glVertex2f(5.5f, 7.1); glVertex2f(5.7f, 7.1f);
+        glVertex2f(5.5f, 7.8f); glVertex2f(5.5f, 7.1f);
+        glVertex2f(5.7f, 7.1f); glVertex2f(5.7f, 7.8f);
+        glVertex2f(5.7f, 7.8f); glVertex2f(5.5f, 7.8f);
+
+        //Kitchen counter
+		glVertex2f(3.5f, 4.5f); glVertex2f(3.5f, 5.0f);
+		glVertex2f(3.5f, 5.0f); glVertex2f(-0.5f, 5.0f);
+		glVertex2f(-0.5f, 5.0f); glVertex2f(-0.5f, 4.5f);
+		glVertex2f(-0.5f, 4.5f); glVertex2f(3.5f, 4.5f);
+        
+        glVertex2f(3.5f, 3.0f); glVertex2f(3.5f, 3.5f);
+        glVertex2f(3.5f, 3.5f); glVertex2f(-0.5f, 3.5f);
+        glVertex2f(-0.5f, 3.5f); glVertex2f(-0.5f, 3.0f);
+        glVertex2f(-0.5f, 3.0f); glVertex2f(3.5f, 3.0f);
+
+        //Bottom windows
+        glVertex2f(-6, -9.85); glVertex2f(-1.05, -9.85);
+        glVertex2f(-4.7625, -9.85); glVertex2f(-4.7625, -10);
+        glVertex2f(-3.525, -9.85); glVertex2f(-3.525, -10);
+        glVertex2f(-2.2875, -9.85); glVertex2f(-2.2875, -10);
+        glVertex2f(-1.05, -9.85); glVertex2f(-1.05, -10);
+
+        glVertex2f(6, -9.85); glVertex2f(1.05, -9.85);
+        glVertex2f(4.7625, -9.85); glVertex2f(4.7625, -10);
+        glVertex2f(3.525, -9.85); glVertex2f(3.525, -10);
+        glVertex2f(2.2875, -9.85); glVertex2f(2.2875, -10);
+        glVertex2f(1.05, -9.85); glVertex2f(1.05, -10);
+
+        //bottom doors
+        glVertex2f(-1.05f, -10.0f);  glVertex2f(-1.05f, -8.95f);
+        DrawDoorArc(-1.05f, -10.0f, 1.05f, 0.0f, M_PI / 2.0f);
+        glVertex2f(1.05f, -10.0f);  glVertex2f(1.05f, -8.95f);
+        DrawDoorArc(1.05f, -10.0f, -1.05f, 0.0f, M_PI / -2.0f);
+
+        //West windows 1.225
+        glVertex2f(-5.85, -10); glVertex2f(-5.85, -0.2);
+        glVertex2f(-5.85, -0.2); glVertex2f(-6, -0.2);
+        glVertex2f(-5.85, -1.425); glVertex2f(-6, -1.425);
+        glVertex2f(-5.85, -2.65); glVertex2f(-6, -2.65);
+        glVertex2f(-5.85, -3.875); glVertex2f(-6, -3.875);
+        glVertex2f(-5.85, -5.1); glVertex2f(-6, -5.1);
+		glVertex2f(-5.85, -6.325); glVertex2f(-6, -6.325);
+		glVertex2f(-5.85, -7.55); glVertex2f(-6, -7.55);
+		glVertex2f(-5.85, -8.775); glVertex2f(-6, -8.775);
+		glVertex2f(-5.85, -9.85); glVertex2f(-6, -9.85);
+		glVertex2f(-5.85f, -0.2f); glVertex2f(-5.85f, 4.414f);
+		glVertex2f(-5.85f, 4.414f); glVertex2f(-6, 4.414f);
+        glVertex2f(-5.85f, 4.414f); glVertex2f(-6, 3.637f);
+		glVertex2f(-5.85f, 3.637f); glVertex2f(-6, 3.637f);
+		glVertex2f(-5.85f, 2.86f); glVertex2f(-6, 2.86f);
+        glVertex2f(-5.85f, 2.86f); glVertex2f(-6, 2.083f);
+        glVertex2f(-5.85f, 2.083f); glVertex2f(-6, 2.083f);
+		glVertex2f(-5.85f, 1.306f); glVertex2f(-6, 1.306f);
+		glVertex2f(-5.85f, 1.306f); glVertex2f(-6, 0.529f);
+		glVertex2f(-5.85f, 0.529f); glVertex2f(-6, 0.529f);
+        
+
+        //Wall separating dining area and kithcen
+		glVertex2f(-6, -0.2); glVertex2f(6, -0.2);
+
+        //Door to Office
+        glVertex2f(-5.8f, -0.2f);  glVertex2f(-5.8f, 0.8f);
+        DrawDoorArc(-5.8f, -0.2f, 1.0f, 0.0f, M_PI / 2.0f);
+        glVertex2f(-3.8f, 3.5f); glVertex2f(-3.0f, 3.5f); 
+        DrawDoorArc(-3.0f, 3.5f, -0.8f, 0.0f, M_PI / 2.0f);
+
+
+        //Office Walls
+		glVertex2f(-6, 4.414); glVertex2f(-3, 4.414);
+        glVertex2f(-3, -0.2); glVertex2f(-3, 4.414);
+
+        // ===== Desk (shifted left) =====
+// Rectangle desk along the wall (centered near top wall)
+        glVertex2f(-5.6f, 3.7f); glVertex2f(-4.2f, 3.7f);  // top edge
+        glVertex2f(-5.6f, 3.3f); glVertex2f(-4.2f, 3.3f);  // bottom edge
+        glVertex2f(-5.6f, 3.7f); glVertex2f(-5.6f, 3.3f);  // left side
+        glVertex2f(-4.2f, 3.7f); glVertex2f(-4.2f, 3.3f);  // right side
+
+        // ===== Chair Blocks (0.4 x 0.4) =====
+        // Chair below the desk
+        glVertex2f(-5.0f, 2.5f); glVertex2f(-4.6f, 2.5f);
+        glVertex2f(-5.0f, 2.1f); glVertex2f(-4.6f, 2.1f);
+        glVertex2f(-5.0f, 2.5f); glVertex2f(-5.0f, 2.1f);
+        glVertex2f(-4.6f, 2.5f); glVertex2f(-4.6f, 2.1f);
+
+        // Chair above the desk
+        glVertex2f(-5.0f, 4.1f); glVertex2f(-4.6f, 4.1f);
+        glVertex2f(-5.0f, 3.7f); glVertex2f(-4.6f, 3.7f);
+        glVertex2f(-5.0f, 4.1f); glVertex2f(-5.0f, 3.7f);
+        glVertex2f(-4.6f, 4.1f); glVertex2f(-4.6f, 3.7f);
+
+
+        //Door between office and storage
+		glVertex2f(-6.0f, 5.0f);  glVertex2f(-7.0f, 5.0f);
+        DrawDoorArc(-6.0f, 5.0f, -1.0f, 0.0f, M_PI / -2.0f);
+
+		//Dry Storage Walls
+		glVertex2f(-6.0, 7.0); glVertex2f(-3.0, 7.0);
+        glVertex2f(-3.0, 7.0); glVertex2f(-3.0, 10.0);
+        //Door to Storage
+        glVertex2f(-5.8f, 7.0f);  glVertex2f(-5.8f, 8.0f);
+        DrawDoorArc(-5.8f, 7.0f, 1.0f, 0.0f, M_PI / 2.0f);
+
+		//Freezer
+        glVertex2f(-0.5, 10.0); glVertex2f(-0.5, 7.0);
+        glVertex2f(-0.5, 7.0); glVertex2f(1.5, 7.0);
+        glVertex2f(1.5, 7.0); glVertex2f(1.5, 10.0);
+        //Freezer Door 
+        glVertex2f(-0.3f, 7.0f);  glVertex2f(-0.3f, 8.0f);
+        DrawDoorArc(-0.3f, 7.0f, 1.0f, 0.0f, M_PI / 2.0f);
+
+        //East windows
+        glVertex2f(5.85, -7.55); glVertex2f(6, -7.55);
+        glVertex2f(5.85, -8.775); glVertex2f(6, -8.775);
+        glVertex2f(5.85, -9.85); glVertex2f(6, -9.85);
+        glVertex2f(5.85, -6.325); glVertex2f(6, -6.325);
+        glVertex2f(5.85, -10); glVertex2f(5.85, -6.325);
+
+        //Toilet Walls
+        glVertex2f(6, -6.325); glVertex2f(2.2875, -6.325);
+        glVertex2f(2.2875, -6.325); glVertex2f(2.2875, -4.1625);
+        glVertex2f(2.2875, -3.1625); glVertex2f(6, -3.1625);
+        glVertex2f(2.2875, -3.1625); glVertex2f(2.2875, -1.2);
+		glVertex2f(4.14075, -1.2); glVertex2f(6, -1.2);
+        glVertex2f(4.14075, -2.2); glVertex2f(6, -2.2);
+        glVertex2f(4.14075, -4.1625); glVertex2f(6, -4.1625);
+        glVertex2f(4.14075, -5.1625); glVertex2f(6, -5.1625);
+
+        // Sink 1 (upper)
+        glVertex2f(2.35, -1.8); glVertex2f(2.75, -1.8);
+        glVertex2f(2.75, -1.8); glVertex2f(2.75, -1.4);
+        glVertex2f(2.35, -1.4); glVertex2f(2.75, -1.4);
+        glVertex2f(2.35, -1.8); glVertex2f(2.35, -1.4);
+
+        // Sink 2 (just below it)
+        glVertex2f(2.35, -2.7); glVertex2f(2.75, -2.7);
+        glVertex2f(2.75, -2.7); glVertex2f(2.75, -2.3);
+        glVertex2f(2.35, -2.3); glVertex2f(2.75, -2.3);
+        glVertex2f(2.35, -2.7); glVertex2f(2.35, -2.3);
+
+		//Sink 3 (upper)
+        glVertex2f(2.35, -4.8); glVertex2f(2.75, -4.8);
+        glVertex2f(2.75, -4.8); glVertex2f(2.75, -4.4);
+        glVertex2f(2.35, -4.4); glVertex2f(2.75, -4.4);
+        glVertex2f(2.35, -4.8); glVertex2f(2.35, -4.4);
+
+        // Sink 4 (just below it)
+        glVertex2f(2.35, -5.7); glVertex2f(2.75, -5.7);
+        glVertex2f(2.75, -5.7); glVertex2f(2.75, -5.3);
+        glVertex2f(2.35, -5.3); glVertex2f(2.75, -5.3);
+        glVertex2f(2.35, -5.7); glVertex2f(2.35, -5.3);
+
+		//Toilet Doors 1
+        glVertex2f(2.2875, -0.2); glVertex2f(2.2875, -1.2);
+        DrawDoorArc(2.2875, -0.2, 1.0f, 0.0f, M_PI / -2.0f);
+
+        glVertex2f(4.14075, -0.2); glVertex2f(4.14075, -1.2);
+        DrawDoorArc(4.14075, -0.2, 1.0f, 0.0f, M_PI / -2.0f);
+
+        glVertex2f(4.14075, -1.2); glVertex2f(4.14075, -2.2);
+        DrawDoorArc(4.14075, -1.2, 1.0f, 0.0f, M_PI / -2.0f);
+
+        glVertex2f(4.14075, -2.2); glVertex2f(4.14075, -3.2);
+        DrawDoorArc(4.14075, -2.2, 1.0f, 0.0f, M_PI / -2.0f);
+        
+        //Toilet Doors 2
+        glVertex2f(2.2875, -3.2); glVertex2f(2.2875, -4.2);
+        DrawDoorArc(2.2875, -3.2, 1.0f, 0.0f, M_PI / -2.0f);
+
+        glVertex2f(4.14075, -3.2); glVertex2f(4.14075, -4.2);
+        DrawDoorArc(4.14075, -3.2, 1.0f, 0.0f, M_PI / -2.0f);
+
+        glVertex2f(4.14075, -4.2); glVertex2f(4.14075, -5.2);
+        DrawDoorArc(4.14075, -4.2, 1.0f, 0.0f, M_PI / -2.0f);
+
+        glVertex2f(4.14075, -5.2); glVertex2f(4.14075, -6.2);
+        DrawDoorArc(4.14075, -5.2, 1.0f, 0.0f, M_PI / -2.0f);
+
+       //Doors to kitchen
+       // Left door
+        glVertex2f(-2.05f, -0.2f);  glVertex2f(-2.05f, -1.2f);
+        DrawDoorArc(-2.05f, -0.2f, 1.025f, 0.0f, -M_PI / 2.0f);
+
+        // Right door
+        glVertex2f(0.0f, -0.2f);  glVertex2f(0.0f, -1.2f);
+        DrawDoorArc(0.0f, -0.2f, 1.025f, M_PI, 3.0f * M_PI / 2.0f);
+        //Privacy wall 
+        glVertex2f(1.05f, 2.0f);  glVertex2f(-3.0f, 2.0f);
+
+        //Loading Doors
+        glVertex2f(-2.7f, 10.0f);  glVertex2f(-2.7f, 11.0);
+        DrawDoorArc(-2.7f, 10.0f, 1.0f, 0.0f, M_PI / 2.0f);
+        glVertex2f(-0.70f, 10.0f);  glVertex2f(-0.70f, 11.0f);
+        DrawDoorArc(-0.70f, 10.0f, -1.0f, 0.0f, M_PI / -2.0f);
+
+		// Dining tables
+		glVertex2f(-4.0f, -4.0f); glVertex2f(-3.0f, -4.0f);
+            glVertex2f(-3.7, -4.0); glVertex2f(-3.7f, -4.4);
+            glVertex2f(-3.7f, -4.4); glVertex2f(-3.3f, -4.4);
+            glVertex2f(-3.3f, -4.4); glVertex2f(-3.3f, -4.0);
+		glVertex2f(-4.0f, -3.0f); glVertex2f(-3.0f, -3.0f);
+            glVertex2f(-3.7f,-3.0f); glVertex2f(-3.7f, -2.6f);
+            glVertex2f(-3.7f, -2.6f); glVertex2f(-3.3f, -2.6f);
+            glVertex2f(-3.3f, -2.6f); glVertex2f(-3.3f, -3.0f);
+		glVertex2f(-4.0f, -4.0f); glVertex2f(-4.0f, -3.0f);
+            glVertex2f(-4.0f, -3.7f); glVertex2f(-4.4f, -3.7f);
+            glVertex2f(-4.4f, -3.7f); glVertex2f(-4.4f, -3.3f);
+            glVertex2f(-4.4f, -3.3f); glVertex2f(-4.0f, -3.3f);
+		glVertex2f(-3.0f, -4.0f); glVertex2f(-3.0f, -3.0f);
+            glVertex2f(-3.0f, -3.7f); glVertex2f(-2.6f, -3.7f);
+            glVertex2f(-2.6f, -3.7f); glVertex2f(-2.6f, -3.3f);
+            glVertex2f(-2.6f, -3.3f); glVertex2f(-3.0f, -3.3f);
+
+            glVertex2f(-4.0f, -7.0f); glVertex2f(-3.0f, -7.0f);
+            glVertex2f(-3.7, -7.0); glVertex2f(-3.7f, -7.4);
+            glVertex2f(-3.7f, -7.4); glVertex2f(-3.3f, -7.4);
+            glVertex2f(-3.3f, -7.4); glVertex2f(-3.3f, -7.0);
+            glVertex2f(-4.0f, -6.0f); glVertex2f(-3.0f, -6.0f);
+            glVertex2f(-3.7f, -6.0f); glVertex2f(-3.7f, -5.6f);
+            glVertex2f(-3.7f, -5.6f); glVertex2f(-3.3f, -5.6f);
+            glVertex2f(-3.3f, -5.6f); glVertex2f(-3.3f, -6.0f);
+            glVertex2f(-4.0f, -7.0f); glVertex2f(-4.0f, -6.0f);
+            glVertex2f(-4.0f, -6.7f); glVertex2f(-4.4f, -6.7f);
+            glVertex2f(-4.4f, -6.7f); glVertex2f(-4.4f, -6.3f);
+            glVertex2f(-4.4f, -6.3f); glVertex2f(-4.0f, -6.3f);
+            glVertex2f(-3.0f, -7.0f); glVertex2f(-3.0f, -6.0f);
+            glVertex2f(-3.0f, -6.7f); glVertex2f(-2.6f, -6.7f);
+            glVertex2f(-2.6f, -6.7f); glVertex2f(-2.6f, -6.3f);
+            glVertex2f(-2.6f, -6.3f); glVertex2f(-3.0f, -6.3f);
+
+            glVertex2f(-1.0f, -4.0f); glVertex2f(-0.0f, -4.0f);
+            glVertex2f(-0.7, -4.0); glVertex2f(-0.7f, -4.4);
+            glVertex2f(-0.7f, -4.4); glVertex2f(-0.3f, -4.4);
+            glVertex2f(-0.3f, -4.4); glVertex2f(-0.3f, -4.0);
+            glVertex2f(-1.0f, -3.0f); glVertex2f(-0.0f, -3.0f);
+            glVertex2f(-0.7f, -3.0f); glVertex2f(-0.7f, -2.6f);
+            glVertex2f(-0.7f, -2.6f); glVertex2f(-0.3f, -2.6f);
+            glVertex2f(-0.3f, -2.6f); glVertex2f(-0.3f, -3.0f);
+            glVertex2f(-1.0f, -4.0f); glVertex2f(-1.0f, -3.0f);
+            glVertex2f(-1.0f, -3.7f); glVertex2f(-1.4f, -3.7f);
+            glVertex2f(-1.4f, -3.7f); glVertex2f(-1.4f, -3.3f);
+            glVertex2f(-1.4f, -3.3f); glVertex2f(-1.0f, -3.3f);
+            glVertex2f(-0.0f, -4.0f); glVertex2f(-0.0f, -3.0f);
+            glVertex2f(-0.0f, -3.7f); glVertex2f(0.4f, -3.7f);
+            glVertex2f(0.4f, -3.7f); glVertex2f(0.4f, -3.3f);
+            glVertex2f(0.4f, -3.3f); glVertex2f(0.0f, -3.3f);
+
+            glVertex2f(-1.0f, -7.0f); glVertex2f(-0.0f, -7.0f);
+            glVertex2f(-0.7, -7.0); glVertex2f(-0.7f, -7.4);
+            glVertex2f(-0.7f, -7.4); glVertex2f(-0.3f, -7.4);
+            glVertex2f(-0.3f, -7.4); glVertex2f(-0.3f, -7.0);
+            glVertex2f(-1.0f, -6.0f); glVertex2f(-0.0f, -6.0f);
+            glVertex2f(-0.7f, -6.0f); glVertex2f(-0.7f, -5.6f);
+            glVertex2f(-0.7f, -5.6f); glVertex2f(-0.3f, -5.6f);
+            glVertex2f(-0.3f, -5.6f); glVertex2f(-0.3f, -6.0f);
+            glVertex2f(-1.0f, -7.0f); glVertex2f(-1.0f, -6.0f);
+            glVertex2f(-1.0f, -6.7f); glVertex2f(-1.4f, -6.7f);
+            glVertex2f(-1.4f, -6.7f); glVertex2f(-1.4f, -6.3f);
+            glVertex2f(-1.4f, -6.3f); glVertex2f(-1.0f, -6.3f);
+            glVertex2f(-0.0f, -7.0f); glVertex2f(-0.0f, -6.0f);
+            glVertex2f(-0.0f, -6.7f); glVertex2f(0.4f, -6.7f);
+            glVertex2f(0.4f, -6.7f); glVertex2f(0.4f, -6.3f);
+            glVertex2f(0.4f, -6.3f); glVertex2f(0.0f, -6.3f);
+
+            glVertex2f(3.6f, -8.6f); glVertex2f(4.6f, -8.6f);
+            glVertex2f(3.9f, -8.6f); glVertex2f(3.9f, -9.0f);
+            glVertex2f(3.9f, -9.0f); glVertex2f(4.3f, -9.0f);
+            glVertex2f(4.3f, -9.0f); glVertex2f(4.3f, -8.6f);
+
+            glVertex2f(3.6f, -7.6f); glVertex2f(4.6f, -7.6f);
+            glVertex2f(3.9f, -7.6f); glVertex2f(3.9f, -7.2f);
+            glVertex2f(3.9f, -7.2f); glVertex2f(4.3f, -7.2f);
+            glVertex2f(4.3f, -7.2f); glVertex2f(4.3f, -7.6f);
+
+            glVertex2f(3.6f, -8.6f); glVertex2f(3.6f, -7.6f);
+            glVertex2f(3.6f, -8.3f); glVertex2f(3.2f, -8.3f);
+            glVertex2f(3.2f, -8.3f); glVertex2f(3.2f, -7.9f);
+            glVertex2f(3.2f, -7.9f); glVertex2f(3.6f, -7.9f);
+
+            glVertex2f(4.6f, -8.6f); glVertex2f(4.6f, -7.6f);
+            glVertex2f(4.6f, -8.3f); glVertex2f(5.0f, -8.3f);
+            glVertex2f(5.0f, -8.3f); glVertex2f(5.0f, -7.9f);
+            glVertex2f(5.0f, -7.9f); glVertex2f(4.6f, -7.9f);
+
+            //That thing that i cant remember the name of right now
+			glVertex2f(0.5f, -8.0f); glVertex2f(0.5f, -8.5f);
+            glVertex2f(0.5f, -8.5f); glVertex2f(1.0f, -8.5f);
+            glVertex2f(1.0f, -8.5f); glVertex2f(1.0f, -8.0f);
+			glVertex2f(1.0f, -8.0f); glVertex2f(0.5f, -8.0f);
+
+            //Storage Details
+            glVertex2f(-5.5f, 9.8f); glVertex2f(-3.5f, 9.8f); 
+            glVertex2f(-5.5f, 9.8f); glVertex2f(-5.5f, 9.2f); 
+            glVertex2f(-3.5f, 9.8f); glVertex2f(-3.5f, 9.2f); 
+            glVertex2f(-5.5f, 9.2f); glVertex2f(-3.5f, 9.2f);
+            glVertex2f(-5.0f, 9.8f); glVertex2f(-5.0f, 9.2f);
+            glVertex2f(-4.5f, 9.8f); glVertex2f(-4.5f, 9.2f);
+            glVertex2f(-4.0f, 9.8f); glVertex2f(-4.0f, 9.2f);
+
+            //Freezer
+            glVertex2f(-0.3f, 9.8f); glVertex2f(1.3f, 9.8f);   // Back of shelving
+            glVertex2f(-0.3f, 9.8f); glVertex2f(-0.3f, 9.4f);  // Left side
+            glVertex2f(1.3f, 9.8f); glVertex2f(1.3f, 9.4f);    // Right side
+            glVertex2f(-0.3f, 9.4f); glVertex2f(1.3f, 9.4f);   // Front of shelving
+
+            // Shelf divider
+            glVertex2f(0.5f, 9.8f); glVertex2f(0.5f, 9.4f);
+            
+            //Fridge
+            glVertex2f(3.0f, 0.5f); glVertex2f(5.0f, 0.5f);  // Front of fridge
+            glVertex2f(3.0f, 0.5f); glVertex2f(3.0f, 0.0f);  // Left side
+            glVertex2f(5.0f, 0.5f); glVertex2f(5.0f, 0.0f);  // Right side
+            glVertex2f(3.0f, 0.0f); glVertex2f(5.0f, 0.0f);  // Back against wall
+
+            // Door division (center line)
+            glVertex2f(4.0f, -0.05f); glVertex2f(4.0f, -0.05f);
+
+            glVertex2f(3.0f, -0.1f); glVertex2f(5.0f, -0.1f);
+
+
+            FireExtinguisher extinguisher;
+
+            // Kitchen area
+            extinguisher.Draw(1.7f, 8.0f);
+            extinguisher.Draw(5.7f, 0.0f);
+            extinguisher.Draw(-5.8f, 4.8f);
+            //Office
+            extinguisher.Draw(-3.7f, 0.0f);
+            //Dinning
+            extinguisher.Draw(-2.0f, -9.6f);
+
+            Toilet toilet;
+
+            // Upper bathroom
+            toilet.Draw(5.65f, -1.6f, 0);
+            toilet.Draw(5.65f, -0.6f, 0);
+            toilet.Draw(5.65f, -2.6f, 0);
+            
+
+            // Lower bathroom  
+            toilet.Draw(5.65f, -4.6f, 0);
+            toilet.Draw(5.65f, -3.6f, 0);
+            toilet.Draw(5.65f, -5.6f, 0);
+           
+            Bin bin;
+
+            // Kitchen
+            bin.Draw(1.7f, 7.5f);
+            bin.Draw(-0.7f, 4.8f);
+            bin.Draw(-0.7f, 3.2f);
+            bin.Draw(3.7f, 4.8f);
+            bin.Draw(3.7f, 3.2f);
+
+            // Office
+			bin.Draw(-3.7f, 3.8f);
+
+            //Bathrooms 
+			bin.Draw(3.5f, -3.0f);
+            bin.Draw(3.5f, -6.0f);
 
         glEnd();
     }
@@ -406,20 +1022,169 @@ public:
 class RearElevation {
 public:
     void Draw() {
-        glBegin(GL_LINES);
-        glColor3f(0.0f, 1.0f, 0.0f); // Green
+        // The original parameters define the boundaries for the drawing:
+ // X: [-15.0, 15.0], Y: [30.0, 60.0]
+ float size = 15.0f;     // half-size of rectangle
+ float offsetY = 45.0f;  // center vertically
+ float offsetX = 0.0f;   // center horizontally
+ float scale = 12.0f;
+ 
+ glPushMatrix();
+ glTranslatef(offsetX, offsetY, 0.0f);
+ glScalef(scale, scale, 1.0f);
 
-        float size = 15.0f;    // half-size of square
-        float offsetY = 45.0f; // center vertically above floor plan
-        float offsetX = 0.0f;  // center horizontally
+ glEnable(GL_BLEND);
+ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+ glEnable(GL_LINE_SMOOTH);
+ glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+ 
+ /*-- Main building(Cream color)--*/
+ drawRectangle(-1.2f, -0.5f, 1.2f, 0.3f, 0.96f, 0.87f, 0.70f);
 
-        // Outer square
-        glVertex2f(offsetX - size, offsetY - size); glVertex2f(offsetX + size, offsetY - size); // bottom
-        glVertex2f(offsetX + size, offsetY - size); glVertex2f(offsetX + size, offsetY + size); // right
-        glVertex2f(offsetX + size, offsetY + size); glVertex2f(offsetX - size, offsetY + size); // top
-        glVertex2f(offsetX - size, offsetY + size); glVertex2f(offsetX - size, offsetY - size); // left
+ /*---water pipe---*/
+ drawRectangle(-1.23f, -0.45f, -1.20f, 0.3f, 1.0f, 1.0f, 1.0f);
 
-        glEnd();
+ /*---Extractor vent---*/
+ drawRectangle(-0.8f, 0.4f, -0.65f, 0.7f, 0.75f, 0.75f, 0.75f);  //change size & color
+
+ // ----Main Window frame (orange/brown)----
+
+ // Placement is on the right side, within the building boundaries:
+ // X: from 0.1f to 1.0f 
+ // Y: from -0.3f to 0.2f
+ float window_x1 = 0.2f;
+ float window_y1 = -0.48f;
+ float window_x2 = 0.6f;
+ float window_y2 = 0.17f;
+
+ drawBrownWindow(window_x1, window_y1, window_x2, window_y2); 
+
+ // Triangle for Roof
+ 
+ glBegin(GL_TRIANGLES);
+ glColor3f(0.82f, 0.48f, 0.48f); 
+ glVertex2f(-1.3f, 0.3f);
+ glColor3f(0.82f, 0.48f, 0.48f); 
+ glVertex2f(1.3f, 0.3f);
+ glColor3f(0.90f, 0.62f, 0.62f); 
+ glVertex2f(0.0f, 1.0f);
+ glEnd();
+
+ 
+ glBegin(GL_QUADS);
+ glColor3f(0.35f, 0.12f, 0.12f);
+ glVertex2f(-1.32f, 0.29f);
+ glVertex2f(1.32f, 0.29f);
+ glVertex2f(1.30f, 0.33f);
+ glVertex2f(-1.30f, 0.33f);
+ glEnd();
+
+ 
+ glBegin(GL_QUADS);
+ glColor4f(0.0f, 0.0f, 0.0f, 0.20f);
+ glVertex2f(-1.2f, 0.30f);
+ glVertex2f(1.2f, 0.30f);
+ glVertex2f(1.2f, 0.24f);
+ glVertex2f(-1.2f, 0.24f);
+ glEnd();
+
+ // roof tiles
+ glColor3f(0.6f, 0.25f, 0.25f);
+ glLineWidth(1.0f);
+
+ 
+ float tileRowSpacing = 0.04f; 
+ float roofBaseY = 0.3f;
+ float roofPeakY = 1.0f;
+ float roofHalfWidth = 1.3f;
+
+ // tile texture effect
+ int row = 0;
+ for (float y = roofBaseY + tileRowSpacing; y < roofPeakY - 0.03f; y += tileRowSpacing, row++) {
+     float yProgress = (y - roofBaseY) / (roofPeakY - roofBaseY);
+     float widthAtY = roofHalfWidth * (1.0f - yProgress);
+
+     
+     glColor3f(0.65f, 0.35f, 0.35f); 
+     glBegin(GL_LINES);
+     glVertex2f(-widthAtY + 0.02f, y - 0.005f);
+     glVertex2f(widthAtY - 0.02f, y - 0.005f);
+     glEnd();
+
+     
+     glColor3f(0.75f, 0.45f, 0.45f);
+     glBegin(GL_LINES);
+     glVertex2f(-widthAtY + 0.02f, y);
+     glVertex2f(widthAtY - 0.02f, y);
+     glEnd();
+ }
+
+ 
+ float tileWidth = 0.08f; 
+ row = 0;
+ for (float y = roofBaseY + tileRowSpacing * 0.5f; y < roofPeakY - 0.08f; y += tileRowSpacing, row++) {
+     float yProgress = (y - roofBaseY) / (roofPeakY - roofBaseY);
+     float widthAtY = roofHalfWidth * (1.0f - yProgress);
+
+     
+     float offset = (row % 2 == 0) ? 0.0f : tileWidth * 0.5f;
+
+     
+     for (float x = -widthAtY + offset; x < widthAtY - 0.02f; x += tileWidth) {
+         if (x > -widthAtY + 0.02f && x < widthAtY - 0.02f) {
+             
+             glColor3f(0.65f, 0.35f, 0.35f);
+             glBegin(GL_LINES);
+             glVertex2f(x + 0.002f, y - tileRowSpacing * 0.3f); 
+             glVertex2f(x + 0.002f, y + tileRowSpacing * 0.3f);
+             glEnd();
+
+             
+             glColor3f(0.75f, 0.45f, 0.45f);
+             glBegin(GL_LINES);
+             glVertex2f(x, y - tileRowSpacing * 0.3f);
+             glVertex2f(x, y + tileRowSpacing * 0.3f);
+             glEnd();
+         }
+     }
+ }
+
+ // Ridge
+ glLineWidth(2.5f);
+ 
+ glColor3f(0.3f, 0.10f, 0.10f);
+ glBegin(GL_LINES);
+ glVertex2f(-0.07f, 0.955f);
+ glVertex2f(0.07f, 0.955f);
+ glEnd();
+
+ 
+ glColor3f(0.4f, 0.15f, 0.15f);
+ glBegin(GL_LINES);
+ glVertex2f(-0.06f, 0.96f);
+ glVertex2f(0.06f, 0.96f);
+ glEnd();
+ glLineWidth(1.0f);
+
+ glPopMatrix();
+ 
+ 
+ // Optional: Uncomment the code below to see the original green bounding box
+/*
+ glBegin(GL_LINES);
+ glColor3f(0.0f, 1.0f, 0.0f); // Green
+
+ // bottom
+ glVertex2f(offsetX - size, offsetY - size); glVertex2f(offsetX + size, offsetY - size);
+ // right
+ glVertex2f(offsetX + size, offsetY - size); glVertex2f(offsetX + size, offsetY + size);
+ // top
+ glVertex2f(offsetX + size, offsetY + size); glVertex2f(offsetX - size, offsetY + size);
+ // left
+ glVertex2f(offsetX - size, offsetY + size); glVertex2f(offsetX - size, offsetY - size);
+
+ glEnd();
+ */
     }
 };
 
@@ -660,22 +1425,190 @@ public:
 class LeftElevation {
 public:
     void Draw() {
-        glBegin(GL_LINES);
-        glColor3f(1.0f, 0.0f, 1.0f); // Purple
+        glPushMatrix();
 
-        float size = 15.0f;      // half-size of square
-        float offsetX = -45.0f;  // center horizontally
-        float offsetY = 0.0f;    // center vertically
+        float offsetX = -45.0f;
+        float offsetY = 0.0f;
 
-        // Outer square
-        glVertex2f(offsetX - size, offsetY - size); glVertex2f(offsetX + size, offsetY - size); // bottom
-        glVertex2f(offsetX + size, offsetY - size); glVertex2f(offsetX + size, offsetY + size); // right
-        glVertex2f(offsetX + size, offsetY + size); glVertex2f(offsetX - size, offsetY + size); // top
-        glVertex2f(offsetX - size, offsetY + size); glVertex2f(offsetX - size, offsetY - size); // left
+        float wallHeightGL = 15.0f;
+        float wallWidthGL = 20.0f;
 
+        float originalHeight = 0.6f;
+        float originalWidth = 1.7f;
+
+        float scaleY = wallHeightGL / originalHeight;
+        float scaleX = wallWidthGL / originalWidth;
+
+        drawWalls(scaleX, scaleY, offsetX, offsetY);
+        drawRoof(scaleX, scaleY, offsetX, offsetY);
+        drawDoor(scaleX, scaleY, offsetX, offsetY, wallWidthGL);
+        drawWindows(scaleX, scaleY, offsetX, offsetY, wallWidthGL);
+        drawGlassPanels(scaleX, scaleY, offsetX, offsetY, wallWidthGL);
+
+        glPopMatrix();
+    }
+
+private:
+    void drawWalls(float sx, float sy, float ox, float oy) {
+        glColor3f(0.78f, 0.72f, 0.65f);
+        glBegin(GL_POLYGON);
+        glVertex2f(-0.85f * sx + ox, -0.5f * sy + oy);
+        glVertex2f(0.85f * sx + ox, -0.5f * sy + oy);
+        glVertex2f(0.85f * sx + ox, 0.1f * sy + oy);
+        glVertex2f(-0.85f * sx + ox, 0.1f * sy + oy);
         glEnd();
     }
+
+    void drawRoof(float sx, float sy, float ox, float oy) {
+        glColor3f(0.95f, 0.45f, 0.40f);
+
+        float roofOverhangGL = 0.19f; // scaled to 20 GL units wall
+        float glToModelX = originalWidth / 20.0f;
+
+        float overhangModel = roofOverhangGL * glToModelX;
+
+        float left = -0.85f - overhangModel;
+        float right = 0.85f + overhangModel;
+
+        glBegin(GL_POLYGON);
+        glVertex2f(left * sx + ox, 0.1f * sy + oy);
+        glVertex2f(right * sx + ox, 0.1f * sy + oy);
+        glVertex2f(0.5f * sx + ox, 0.5f * sy + oy);
+        glVertex2f(-0.5f * sx + ox, 0.5f * sy + oy);
+        glEnd();
+    }
+
+    void drawDoor(float sx, float sy, float ox, float oy, float wallWidthGL) {
+        glColor3f(0.75f, 0.45f, 0.25f);
+
+        float leftWallModel = -0.85f;
+        float glToModel = originalWidth / wallWidthGL;
+
+        float doorLeftModel = leftWallModel + 3.16f * glToModel;
+        float doorRightModel = doorLeftModel + 1.0f * glToModel;
+
+        float doorBottom = -0.5f * sy + oy;
+        float doorTop = -0.1f * sy + oy;
+
+        glBegin(GL_POLYGON);
+        glVertex2f(doorLeftModel * sx + ox, doorBottom);
+        glVertex2f(doorRightModel * sx + ox, doorBottom);
+        glVertex2f(doorRightModel * sx + ox, doorTop);
+        glVertex2f(doorLeftModel * sx + ox, doorTop);
+        glEnd();
+    }
+
+    void drawWindows(float sx, float sy, float ox, float oy, float wallWidthGL) {
+        float glToModel = originalWidth / wallWidthGL;
+
+        float winWidthModel = 0.9f * glToModel;
+        float gapModel = 0.52f * glToModel;
+
+        float winHeight = 0.25f * sy;
+        float startX = -0.4f * sx;
+        float startY = -0.35f * sy;
+        float frameThick = 0.01f * sx;
+
+        for (int i = 0; i < 3; i++) {
+            float x = startX + i * ((winWidthModel + gapModel) * sx);
+
+            glColor3f(0.55f, 0.27f, 0.07f);
+            // left frame
+            glBegin(GL_POLYGON);
+            glVertex2f(x + ox, startY + oy);
+            glVertex2f(x + frameThick + ox, startY + oy);
+            glVertex2f(x + frameThick + ox, startY + winHeight + oy);
+            glVertex2f(x + ox, startY + winHeight + oy);
+            glEnd();
+
+            // right frame
+            glBegin(GL_POLYGON);
+            glVertex2f(x + winWidthModel * sx - frameThick + ox, startY + oy);
+            glVertex2f(x + winWidthModel * sx + ox, startY + oy);
+            glVertex2f(x + winWidthModel * sx + ox, startY + winHeight + oy);
+            glVertex2f(x + winWidthModel * sx - frameThick + ox, startY + winHeight + oy);
+            glEnd();
+
+            // top frame
+            glBegin(GL_POLYGON);
+            glVertex2f(x + ox, startY + winHeight - frameThick + oy);
+            glVertex2f(x + winWidthModel * sx + ox, startY + winHeight - frameThick + oy);
+            glVertex2f(x + winWidthModel * sx + ox, startY + winHeight + oy);
+            glVertex2f(x + ox, startY + winHeight + oy);
+            glEnd();
+
+            // bottom frame
+            glBegin(GL_POLYGON);
+            glVertex2f(x + ox, startY + oy);
+            glVertex2f(x + winWidthModel * sx + ox, startY + oy);
+            glVertex2f(x + winWidthModel * sx + ox, startY + frameThick + oy);
+            glVertex2f(x + ox, startY + frameThick + oy);
+            glEnd();
+
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glColor4f(1.0f, 1.0f, 1.0f, 0.9f);
+            glBegin(GL_POLYGON);
+            glVertex2f(x + frameThick + ox, startY + frameThick + oy);
+            glVertex2f(x + winWidthModel * sx - frameThick + ox, startY + frameThick + oy);
+            glVertex2f(x + winWidthModel * sx - frameThick + ox, startY + winHeight - frameThick + oy);
+            glVertex2f(x + frameThick + ox, startY + winHeight - frameThick + oy);
+            glEnd();
+            glDisable(GL_BLEND);
+        }
+    }
+
+    void drawGlassPanels(float sx, float sy, float ox, float oy, float wallWidthGL) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        int numPanels = 8;
+        float paneGLWidth = 1.185f;
+        float gapGL = 0.1f;
+        float glToModel = originalWidth / wallWidthGL;
+
+        float wallRight = 0.85f;
+        float totalWidth = numPanels * paneGLWidth + (numPanels - 1) * gapGL;
+        float startGLX = wallWidthGL - totalWidth;
+        float startModelX = -0.85f + startGLX * glToModel;
+        float paneModelWidth = paneGLWidth * glToModel;
+        float gapModel = gapGL * glToModel;
+
+        float bottom = -0.45f * sy + oy;
+        float top = 0.1f * sy + oy;
+        float frameThickness = 0.01f * sx;
+
+        for (int i = 0; i < numPanels; i++) {
+            float x0 = startModelX + i * (paneModelWidth + gapModel);
+            float x1 = x0 + paneModelWidth;
+
+            float sx0 = x0 * sx + ox;
+            float sx1 = x1 * sx + ox;
+            float sb = bottom;
+            float st = top;
+            float sf = frameThickness;
+
+            glColor3f(0.55f, 0.27f, 0.07f);
+            glBegin(GL_POLYGON); glVertex2f(sx0, sb); glVertex2f(sx0 + sf, sb); glVertex2f(sx0 + sf, st); glVertex2f(sx0, st); glEnd();
+            glBegin(GL_POLYGON); glVertex2f(sx1 - sf, sb); glVertex2f(sx1, sb); glVertex2f(sx1, st); glVertex2f(sx1 - sf, st); glEnd();
+            glBegin(GL_POLYGON); glVertex2f(sx0, st - sf); glVertex2f(sx1, st - sf); glVertex2f(sx1, st); glVertex2f(sx0, st); glEnd();
+            glBegin(GL_POLYGON); glVertex2f(sx0, sb); glVertex2f(sx1, sb); glVertex2f(sx1, sb + sf); glVertex2f(sx0, sb + sf); glEnd();
+
+            glColor4f(0.6f, 0.75f, 0.9f, 0.6f);
+            glBegin(GL_POLYGON);
+            glVertex2f(sx0 + sf, sb + sf);
+            glVertex2f(sx1 - sf, sb + sf);
+            glVertex2f(sx1 - sf, st - sf);
+            glVertex2f(sx0 + sf, st - sf);
+            glEnd();
+        }
+
+        glDisable(GL_BLEND);
+    }
+
+    const float originalWidth = 1.7f;
 };
+
 
 class RightElevation {
 public:
@@ -733,10 +1666,10 @@ int main(void)
     while (!glfwWindowShouldClose(window))
     {
         // --- Controls ---
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)  scrollX -= 0.01f;
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) scrollX += 0.01f;
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)    scrollY += 0.01f;
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)  scrollY -= 0.01f;
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)  scrollX -= 0.001f;
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) scrollX += 0.001f;
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)    scrollY += 0.001f;
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)  scrollY -= 0.001f;
 
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) zoomLevel -= 0.01f;
         if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) zoomLevel += 0.01f;
