@@ -680,20 +680,395 @@ public:
 class RightElevation {
 public:
     void Draw() {
-        glBegin(GL_LINES);
-        glColor3f(0.5f, 0.5f, 0.0f); // Olive / yellow-green
+        // Position the building relative to our drawing area
+        float offsetX = 35.0f;
+        float offsetY = 0.0f;
 
-        float size = 15.0f;      // half-size of square
-        float offsetX = 45.0f;   // center horizontally
-        float offsetY = 0.0f;    // center vertically
+        // Main building dimensions
+        float width = 27.5f;    // overall width
+        float height = 7.0f;    // wall height
+        float roofH = 5.0f;     // roof height
 
-        // Outer square
-        glVertex2f(offsetX - size, offsetY - size); glVertex2f(offsetX + size, offsetY - size); // bottom
-        glVertex2f(offsetX + size, offsetY - size); glVertex2f(offsetX + size, offsetY + size); // right
-        glVertex2f(offsetX + size, offsetY + size); glVertex2f(offsetX - size, offsetY + size); // top
-        glVertex2f(offsetX - size, offsetY + size); glVertex2f(offsetX - size, offsetY - size); // left
+        // Calculate the four corners of our building
+        float leftX = offsetX - width / 2.0f;
+        float rightX = offsetX + width / 2.0f;
+        float baseY = offsetY;
+        float topY = offsetY + height;
 
+        // Define our color palette
+        const float wallR = 0.82f, wallG = 0.78f, wallB = 0.72f;     // warm beige for walls
+        const float roofR = 0.95f, roofG = 0.60f, roofB = 0.60f;     // terracotta roof tiles
+        const float glassR = 0.45f, glassG = 0.65f, glassB = 0.90f;  // sky blue glass
+        const float outlineR = 1.00f, outlineG = 0.36f, outlineB = 0.05f;  // orange accent lines
+        const float boxWallR = 0.75f, boxWallG = 0.72f, boxWallB = 0.70f;  // slightly darker beige
+        const float ventR = 0.65f, ventG = 0.65f, ventB = 0.66f;  // metallic grey for vents
+
+        // Draw the main wall rectangle
+        glColor3f(wallR, wallG, wallB);
+        glBegin(GL_QUADS);
+        glVertex2f(leftX, baseY);
+        glVertex2f(rightX, baseY);
+        glVertex2f(rightX, topY);
+        glVertex2f(leftX, topY);
         glEnd();
+
+        // Add a thin decorative trim under the eaves
+        float trimH = 0.5f;
+        glColor3f(0.78f, 0.60f, 0.58f);  // subtle contrast color
+        glBegin(GL_QUADS);
+        glVertex2f(leftX, topY - trimH * 0.5f);
+        glVertex2f(rightX, topY - trimH * 0.5f);
+        glVertex2f(rightX, topY + trimH * 0.5f);
+        glVertex2f(leftX, topY + trimH * 0.5f);
+        glEnd();
+
+        // Draw the main roof shape as a trapezoid
+        glColor3f(0.95f, 0.55f, 0.55f);  // roof color
+        float ridgeHalf = width * 0.20f;  // flat section at roof peak
+        float ridgeY = topY + roofH;      // height of roof ridge
+
+        glBegin(GL_QUADS);
+        glVertex2f(leftX - 0.3f, topY);        // bottom left eave
+        glVertex2f(leftX + ridgeHalf, ridgeY); // ridge start
+        glVertex2f(rightX - ridgeHalf, ridgeY); // ridge end
+        glVertex2f(rightX + 0.3f, topY);       // bottom right eave
+        glEnd();
+
+        // Add texture to make the roof look tiled
+        glColor3f(0.6f, 0.25f, 0.25f); // darker color for tile lines
+        glLineWidth(1.0f);
+
+        // Tile spacing and roof boundaries
+        float tileRowSpacing = 0.3f;
+        float roofBaseY = topY;
+        float roofPeakY = ridgeY;
+
+        // Roof edge coordinates
+        float leftEaveX = leftX - 0.3f;
+        float rightEaveX = rightX + 0.3f;
+        float leftRidgeX = leftX + ridgeHalf;
+        float rightRidgeX = rightX - ridgeHalf;
+
+        // Draw horizontal tile lines across the roof
+        int row = 0;
+        for (float y = roofBaseY + tileRowSpacing; y < roofPeakY; y += tileRowSpacing, row++) {
+            float yProgress = (y - roofBaseY) / (roofPeakY - roofBaseY);
+
+            // Calculate where this tile row sits on the sloping roof
+            float leftXAtY = leftEaveX + (leftRidgeX - leftEaveX) * yProgress;
+            float rightXAtY = rightEaveX + (rightRidgeX - rightEaveX) * yProgress;
+
+            // Shadow under each tile row
+            glColor3f(0.65f, 0.35f, 0.35f);
+            glBegin(GL_LINES);
+            glVertex2f(leftXAtY, y - 0.03f);
+            glVertex2f(rightXAtY, y - 0.03f);
+            glEnd();
+
+            // Main tile separation line
+            glColor3f(0.75f, 0.45f, 0.45f);
+            glBegin(GL_LINES);
+            glVertex2f(leftXAtY, y);
+            glVertex2f(rightXAtY, y);
+            glEnd();
+        }
+
+        // Add vertical separators between tiles with staggered pattern
+        float tileWidth = 0.35f;
+        row = 0;
+        for (float y = roofBaseY + tileRowSpacing * 0.5f; y < roofPeakY - 0.1f; y += tileRowSpacing, row++) {
+            float yProgress = (y - roofBaseY) / (roofPeakY - roofBaseY);
+
+            // Current roof width at this height
+            float leftXAtY = leftEaveX + (leftRidgeX - leftEaveX) * yProgress;
+            float rightXAtY = rightEaveX + (rightRidgeX - rightEaveX) * yProgress;
+            float widthAtY = rightXAtY - leftXAtY;
+
+            // Offset every other row for realistic brick pattern
+            float offset = (row % 2 == 0) ? 0.0f : tileWidth * 0.5f;
+
+            // Draw the vertical tile separators
+            for (float x = leftXAtY + offset; x < rightXAtY; x += tileWidth) {
+                if (x > leftXAtY && x < rightXAtY) {
+                    float separatorHeight = tileRowSpacing * 0.6f;
+
+                    // Shadow line
+                    glColor3f(0.65f, 0.35f, 0.35f);
+                    glBegin(GL_LINES);
+                    glVertex2f(x + 0.015f, y - separatorHeight * 0.5f);
+                    glVertex2f(x + 0.015f, y + separatorHeight * 0.5f);
+                    glEnd();
+
+                    // Main separator
+                    glColor3f(0.75f, 0.45f, 0.45f);
+                    glBegin(GL_LINES);
+                    glVertex2f(x, y - separatorHeight * 0.5f);
+                    glVertex2f(x, y + separatorHeight * 0.5f);
+                    glEnd();
+                }
+            }
+        }
+
+        // Draw two tall glass doors on the left side
+        glColor3f(glassR, glassG, glassB);
+        float doorW = width * 0.095f / 2;     // door panel width
+        float doorH = height * 0.88f;         // door height
+        float doorBase = baseY;
+        float startX = leftX + width * 0.07f; // starting position
+
+        // Draw the two door panels
+        for (int i = 0; i < 2; i++) {
+            float x1 = startX + i * doorW;
+            float x2 = x1 + doorW;
+
+            glBegin(GL_QUADS);
+            glVertex2f(x1, doorBase);
+            glVertex2f(x2, doorBase);
+            glVertex2f(x2, doorBase + doorH);
+            glVertex2f(x1, doorBase + doorH);
+            glEnd();
+        }
+
+        // Add five small square windows above the doors
+        glColor3f(glassR, glassG, glassB);
+        float winSize = height * 0.18f;      // window size
+        float winGap = width * 0.017f;       // spacing between windows
+        float winStart = startX + 2.0f * doorW + width * 0.04f; // position
+        float winY = baseY + height * 0.53f; // height from ground
+
+        for (int i = 0; i < 5; ++i) {
+            float x1 = winStart + i * (winSize + winGap);
+            float x2 = x1 + winSize;
+            float y1 = winY;
+            float y2 = y1 + winSize;
+
+            glBegin(GL_QUADS);
+            glVertex2f(x1, y1);
+            glVertex2f(x2, y1);
+            glVertex2f(x2, y2);
+            glVertex2f(x1, y2);
+            glEnd();
+        }
+
+        // Draw the rainwater collection system
+        glColor3f(0.25f, 0.25f, 0.28f); // dark grey for pipes
+
+        float pipeW = 0.35f;     // pipe width
+        float pipeH = 6.0f;     // pipe height
+        float gutterH = 0.8f;   // gutter height
+        float gutterBoxW = 4.0f; // collection box width
+        float gutterBoxH = 1.5f; // collection box height
+
+        // Position the downpipe on the right side
+        float px = rightX - pipeW;   // pipe x position
+        float py1 = roofH * 1.4f;    // pipe top (below gutter)
+        float py2 = baseY + gutterH + 0.2f; // pipe bottom
+
+        // Draw the collection box at ground level
+        float boxW = 2.0f;
+        float boxH = 1.0f;
+        float boxY1 = baseY;
+        float boxY2 = boxY1 + boxH;
+        float boxX1 = width * 1.7f;
+        float boxX2 = boxX1 + boxW;
+
+        // Box fill
+        glColor3f(0.45f, 0.45f, 0.48f);
+        glBegin(GL_QUADS);
+        glVertex2f(boxX1, boxY1);
+        glVertex2f(boxX2, boxY1);
+        glVertex2f(boxX2, boxY2);
+        glVertex2f(boxX1, boxY2);
+        glEnd();
+
+        // Box outline
+        glColor3f(0.0f, 0.0f, 0.0f);
+        glBegin(GL_LINE_LOOP);
+        glVertex2f(boxX1, boxY1);
+        glVertex2f(boxX2, boxY1);
+        glVertex2f(boxX2, boxY2);
+        glVertex2f(boxX1, boxY2);
+        glEnd();
+
+        // Draw the downpipe
+        glColor3f(0.6f, 0.6f, 0.65f);
+        glBegin(GL_QUADS);
+        glVertex2f(px, py1);
+        glVertex2f(px + pipeW, py1);
+        glVertex2f(px + pipeW, py2);
+        glVertex2f(px, py2);
+        glEnd();
+
+        // Pipe outline
+        glColor3f(0.0f, 0.0f, 0.0f);
+        glBegin(GL_LINE_LOOP);
+        glVertex2f(px, py1);
+        glVertex2f(px + pipeW, py1);
+        glVertex2f(px + pipeW, py2);
+        glVertex2f(px, py2);
+        glEnd();
+
+        // Add three extractor vents along the roof ridge
+        float ventW = 0.55f;       // vent width
+        float ventH = 1.0f;       // vent height
+        float capOverhang = 0.4f; // cap overhang
+        float spacing = 0.9f;     // spacing between vents
+
+        for (int i = 0; i < 3; i++) {
+            // Position each vent along the ridge
+            float baseX1 = (rightX - ridgeHalf - ventW * 1.5f) - i * (ventW + spacing);
+            float baseX2 = baseX1 + ventW;
+            float baseY1 = ridgeY;          // sits on roof ridge
+            float baseY2 = baseY1 + ventH;
+
+            // Vent body
+            glColor3f(0.6f, 0.6f, 0.65f);
+            glBegin(GL_QUADS);
+            glVertex2f(baseX1, baseY1);
+            glVertex2f(baseX2, baseY1);
+            glVertex2f(baseX2, baseY2);
+            glVertex2f(baseX1, baseY2);
+            glEnd();
+
+            // Vent cap with overhang
+            glColor3f(0.55f, 0.55f, 0.60f);
+            glBegin(GL_QUADS);
+            glVertex2f(baseX1 - capOverhang, baseY2);
+            glVertex2f(baseX2 + capOverhang, baseY2);
+            glVertex2f(baseX2 + capOverhang, baseY2 + 0.35f);
+            glVertex2f(baseX1 - capOverhang, baseY2 + 0.35f);
+            glEnd();
+
+            // Outline the vent and cap
+            glColor3f(0.0f, 0.0f, 0.0f);
+            glLineWidth(1.0f);
+            glBegin(GL_LINES);
+
+            // Vent body outline
+            glVertex2f(baseX1, baseY1); glVertex2f(baseX2, baseY1);
+            glVertex2f(baseX2, baseY1); glVertex2f(baseX2, baseY2);
+            glVertex2f(baseX2, baseY2); glVertex2f(baseX1, baseY2);
+            glVertex2f(baseX1, baseY2); glVertex2f(baseX1, baseY1);
+
+            // Cap outline
+            glVertex2f(baseX1 - capOverhang, baseY2);          glVertex2f(baseX2 + capOverhang, baseY2);
+            glVertex2f(baseX2 + capOverhang, baseY2);          glVertex2f(baseX2 + capOverhang, baseY2 + 0.35f);
+            glVertex2f(baseX2 + capOverhang, baseY2 + 0.35f);  glVertex2f(baseX1 - capOverhang, baseY2 + 0.35f);
+            glVertex2f(baseX1 - capOverhang, baseY2 + 0.35f);  glVertex2f(baseX1 - capOverhang, baseY2);
+            glEnd();
+        }
+
+        // Draw all the outline details
+        glColor3f(outlineR, outlineG, outlineB);
+        glLineWidth(1.0f);
+        glBegin(GL_LINES);
+
+        // Outline the two doors
+        float x1 = startX;
+        float x2 = x1 + doorW;
+
+        // Left door outline
+        glVertex2f(x1, doorBase);
+        glVertex2f(x2, doorBase);
+        glVertex2f(x2, doorBase);
+        glVertex2f(x2, doorBase + doorH);
+        glVertex2f(x2, doorBase + doorH);
+        glVertex2f(x1, doorBase + doorH);
+        glVertex2f(x1, doorBase + doorH);
+        glVertex2f(x1, doorBase);
+
+        // Right door outline
+        x1 = startX + doorW;
+        x2 = x1 + doorW;
+
+        glVertex2f(x1, doorBase);
+        glVertex2f(x2, doorBase);
+        glVertex2f(x2, doorBase);
+        glVertex2f(x2, doorBase + doorH);
+        glVertex2f(x2, doorBase + doorH);
+        glVertex2f(x1, doorBase + doorH);
+        glVertex2f(x1, doorBase + doorH);
+        glVertex2f(x1, doorBase);
+
+        // Add door handles
+        float handleY1 = baseY + height * 0.45f;
+        float handleY2 = handleY1 + 0.8f;
+        float handleX1_left = startX + doorW * 0.7f;
+        float handleX2_left = handleX1_left + 0.1f;
+        float handleX1_right = startX + doorW + doorW * 0.2f;
+        float handleX2_right = handleX1_right + 0.1f;
+
+        drawRectangle(handleX1_left, handleY1, handleX2_left, handleY2, 0.3f, 0.3f, 0.3f);
+        drawRectangle(handleX1_right, handleY1, handleX2_right, handleY2, 0.3f, 0.3f, 0.3f);
+
+        // Left handle fill
+        glColor3f(0.3f, 0.3f, 0.3f);
+        glBegin(GL_QUADS);
+        glVertex2f(handleX1_left, handleY1);
+        glVertex2f(handleX2_left, handleY1);
+        glVertex2f(handleX2_left, handleY2);
+        glVertex2f(handleX1_left, handleY2);
+        glEnd();
+
+        // Switch to thinner lines for fine details
+        glLineWidth(0.25f);
+        glColor3f(outlineR, outlineG, outlineB);
+        glBegin(GL_LINES);
+
+        // Building foundation and walls
+        glVertex2f(leftX, baseY);
+        glVertex2f(rightX, baseY);
+        glVertex2f(rightX, baseY);
+        glVertex2f(rightX, topY);
+        glVertex2f(leftX, baseY);
+        glVertex2f(leftX, topY);
+
+        // Roof edges
+        glVertex2f(leftX - 0.3f, topY);
+        glVertex2f(leftX + ridgeHalf, ridgeY);
+        glVertex2f(rightX + 0.3f, topY);
+        glVertex2f(rightX - ridgeHalf, ridgeY);
+        glVertex2f(leftX + ridgeHalf, ridgeY);
+        glVertex2f(rightX - ridgeHalf, ridgeY);
+
+        // Eaves trim
+        glVertex2f(leftX - 0.3f, topY);
+        glVertex2f(rightX + 0.3f, topY);
+
+        // Window frames and muntins (crossbars)
+        for (int i = 0; i < 5; ++i) {
+            float x1 = winStart + i * (winSize + winGap);
+            float x2 = x1 + winSize;
+            float y1 = winY;
+            float y2 = y1 + winSize;
+
+            // Window frame
+            glVertex2f(x1, y1);
+            glVertex2f(x2, y1);
+            glVertex2f(x2, y1);
+            glVertex2f(x2, y2);
+            glVertex2f(x2, y2);
+            glVertex2f(x1, y2);
+            glVertex2f(x1, y2);
+            glVertex2f(x1, y1);
+
+
+            // Diagonal cross (X pattern)
+            glVertex2f(x1, y1);
+            glVertex2f(x2, y2);
+            glVertex2f(x2, y1);
+            glVertex2f(x1, y2);
+
+            // Center V pattern
+            float cx = (x1 + x2) * 0.5f;
+            glVertex2f(x1 + 0.12f, y2 - 0.12f);
+            glVertex2f(cx, y1 + 0.04f);
+            glVertex2f(x2 - 0.12f, y2 - 0.12f);
+            glVertex2f(cx, y1 + 0.04f);
+        }
+        glEnd();
+
+        glLineWidth(1.0f);
     }
 };
 
@@ -733,13 +1108,13 @@ int main(void)
     while (!glfwWindowShouldClose(window))
     {
         // --- Controls ---
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)  scrollX -= 0.01f;
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) scrollX += 0.01f;
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)    scrollY += 0.01f;
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)  scrollY -= 0.01f;
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)  scrollX -= 0.1f;
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) scrollX += 0.1f;
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)    scrollY += 0.1f;
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)  scrollY -= 0.1f;
 
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) zoomLevel -= 0.01f;
-        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) zoomLevel += 0.01f;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) zoomLevel -= 0.1f;
+        if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) zoomLevel += 0.1f;
 
         if (zoomLevel < 5.0f) zoomLevel = 5.0f;
         if (zoomLevel > 200.0f) zoomLevel = 200.0f;
